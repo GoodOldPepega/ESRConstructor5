@@ -6,7 +6,7 @@ package com.goodoldpepega.esrconstructor5;
  */
 
 
-class ESRException extends Exception {
+public class ESRException extends Exception {
 
     /**
      *

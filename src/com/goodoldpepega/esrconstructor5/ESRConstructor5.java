@@ -140,11 +140,12 @@ public class ESRConstructor5 {
                     cell.setCellValue(titleString);
                 }
             }
-            if (mergedColumnsNumber > 0) {
-                mergedColumnsNumber--;
+            int newMergedColumnsNumber = mergedColumnsNumber;
+            if (newMergedColumnsNumber > 0) {
+                newMergedColumnsNumber--;
             }
             sheet.addMergedRegion(new CellRangeAddress(titleRowNumber, titleRowNumber, 0,
-                    mergedColumnsNumber));
+                    newMergedColumnsNumber));
             titleRowNumber++;
         }
     }
@@ -264,7 +265,7 @@ public class ESRConstructor5 {
                 cell.setCellValue(Double.parseDouble(valueS));
             } else if (esrTableCell.getType() == Cell.CELL_TYPE_FORMULA) {
                 cell.setCellType(Cell.CELL_TYPE_FORMULA);
-                cell.setCellValue(valueS);
+                cell.setCellFormula(valueS);
             } else if (esrTableCell.getType() == Cell.CELL_TYPE_BLANK) {
                 cell.setCellType(Cell.CELL_TYPE_BLANK);
             } else if (esrTableCell.getType() == Cell.CELL_TYPE_BOOLEAN) {

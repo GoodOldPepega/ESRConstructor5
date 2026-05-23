@@ -20,7 +20,6 @@ public interface ESRCell {
     int CELL_TYPE_FORMULA = 2;
     int CELL_TYPE_BLANK = 3;
     int CELL_TYPE_BOOLEAN = 4;
-    int CELL_TYPE_ERROR = 5;
 
     /**
      * Get cell value
