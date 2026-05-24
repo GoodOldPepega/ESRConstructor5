@@ -244,3 +244,32 @@ esrRow.addCell(esrTableCell);
 esrBlock.addRow(esrRow);
 esrReport.addBlock(esrBlock);
 ```
+
+
+## Отчёт без описательной части и заголовков
+```java
+ESRReport esrReport = new ESRReport();
+
+//Создание блока основного содержимого
+ESRBlock esrBlock = new ESRTableBlock();
+ESRRow esrRow = new ESRTableRow();
+esrRow.addCell(new ESRTableCell("Cell 1.1", 3000));
+esrRow.addCell(new ESRTableCell("Cell 1.2", 4000));
+esrRow.addCell(new ESRTableCell("Cell 1.3", 5000));
+esrBlock.addRow(esrRow);
+esrReport.addBlock(esrBlock);
+esrBlock = new ESRTableBlock();
+esrRow = new ESRTableRow();
+esrRow.addCell(new ESRTableCell("Cell 2.1"));
+esrRow.addCell(new ESRTableCell("Cell 2.2"));
+esrRow.addCell(new ESRTableCell("Cell 2.3"));
+esrBlock.addRow(esrRow);
+esrReport.addBlock(esrBlock);
+esrBlock = new ESRTableBlock();
+esrRow = new ESRTableRow();
+esrRow.addCell(new ESRTableCell("Cell 3.1"));
+esrRow.addCell(new ESRTableCell("Cell 3.2"));
+esrRow.addCell(new ESRTableCell("Cell 3.3"));
+esrBlock.addRow(esrRow);
+esrReport.addBlock(esrBlock);
+```
