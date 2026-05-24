@@ -20,6 +20,9 @@ public class Example1 {
         esrConstructor5.writeToExcel(createForthReport(), "Forth Report", true);
         esrConstructor5.writeToExcel(createFifthReport(), "Fifth Report", false);
         esrConstructor5.writeToExcel(createSixthReport(), "Sixth Report", false);
+        esrConstructor5.writeToExcel(createSeventhReport(), "Seventh Report", false);
+        esrConstructor5.writeToExcel(createEightReport(), "EightReport Report", false);
+        esrConstructor5.writeToExcel(createNinthReport(), "NinthReport Report", false);
         FileOutputStream fileOutputStream = new FileOutputStream(new File("D:/Test/testReport.xls"));
         hssfWorkbook.write(fileOutputStream);
         fileOutputStream.close();
@@ -42,8 +45,8 @@ public class Example1 {
         ESRHeaderBlock esrHeaderBlock = new ESRHeaderBlock();
         ESRRow esrHeaderRow = new ESRHeaderRow();
         esrHeaderRow.addCell(new ESRHeaderCell("Column1", 3000));
-        esrHeaderRow.addCell(new ESRHeaderCell("Column2", 3500));
-        esrHeaderRow.addCell(new ESRHeaderCell("Column3", 4000));
+        esrHeaderRow.addCell(new ESRHeaderCell("Column2", 4000));
+        esrHeaderRow.addCell(new ESRHeaderCell("Column3", 5000));
         esrHeaderBlock.addRow(esrHeaderRow);
         esrReport.setEsrHeaderBlock(esrHeaderBlock);
 
@@ -89,8 +92,8 @@ public class Example1 {
         ESRHeaderBlock esrHeaderBlock = new ESRHeaderBlock();
         ESRRow esrHeaderRow = new ESRHeaderRow();
         esrHeaderRow.addCell(new ESRHeaderCell("Column1", 3000));
-        esrHeaderRow.addCell(new ESRHeaderCell("Column2", 3500));
-        esrHeaderRow.addCell(new ESRHeaderCell("Column3", 4000));
+        esrHeaderRow.addCell(new ESRHeaderCell("Column2", 4000));
+        esrHeaderRow.addCell(new ESRHeaderCell("Column3", 5000));
         esrHeaderBlock.addRow(esrHeaderRow);
         esrReport.setEsrHeaderBlock(esrHeaderBlock);
 
@@ -131,13 +134,13 @@ public class Example1 {
         ESRHeaderBlock esrHeaderBlock = new ESRHeaderBlock();
         ESRRow esrHeaderRow = new ESRHeaderRow();
         esrHeaderRow.addCell(new ESRHeaderCell("Column1.1", 3000));
-        esrHeaderRow.addCell(new ESRHeaderCell("Column2.1", 3500));
-        esrHeaderRow.addCell(new ESRHeaderCell("Column3.1", 4000));
+        esrHeaderRow.addCell(new ESRHeaderCell("Column2.1", 4000));
+        esrHeaderRow.addCell(new ESRHeaderCell("Column3.1", 5000));
         esrHeaderBlock.addRow(esrHeaderRow);
         esrHeaderRow = new ESRHeaderRow();
         esrHeaderRow.addCell(new ESRHeaderCell("Column2.1", 3000));
-        esrHeaderRow.addCell(new ESRHeaderCell("Column2.2", 3500));
-        esrHeaderRow.addCell(new ESRHeaderCell("Column2.3", 4000));
+        esrHeaderRow.addCell(new ESRHeaderCell("Column2.2", 4000));
+        esrHeaderRow.addCell(new ESRHeaderCell("Column2.3", 5000));
         esrHeaderBlock.addRow(esrHeaderRow);
         ESRMerge esrMerge = new ESRMerge();
         esrMerge.addMergeGroup(0,0,0,1);
@@ -239,10 +242,10 @@ public class Example1 {
         ESRHeaderBlock esrHeaderBlock = new ESRHeaderBlock();
         ESRRow esrHeaderRow = new ESRHeaderRow();
         esrHeaderRow.addCell(new ESRHeaderCell("Column1", 3000));
-        esrHeaderRow.addCell(new ESRHeaderCell("Column2", 3500));
-        esrHeaderRow.addCell(new ESRHeaderCell("Column3", 4000));
-        esrHeaderRow.addCell(new ESRHeaderCell("Column4", 4000));
-        esrHeaderRow.addCell(new ESRHeaderCell("Column5", 4000));
+        esrHeaderRow.addCell(new ESRHeaderCell("Column2", 4000));
+        esrHeaderRow.addCell(new ESRHeaderCell("Column3", 5000));
+        esrHeaderRow.addCell(new ESRHeaderCell("Column4", 6000));
+        esrHeaderRow.addCell(new ESRHeaderCell("Column5", 7000));
         esrHeaderBlock.addRow(esrHeaderRow);
         esrReport.setEsrHeaderBlock(esrHeaderBlock);
 
@@ -319,8 +322,8 @@ public class Example1 {
         ESRHeaderBlock esrHeaderBlock = new ESRHeaderBlock();
         ESRRow esrHeaderRow = new ESRHeaderRow();
         esrHeaderRow.addCell(new ESRHeaderCell("Column1", 3000));
-        esrHeaderRow.addCell(new ESRHeaderCell("Column2", 3500));
-        esrHeaderRow.addCell(new ESRHeaderCell("Column3", 4000));
+        esrHeaderRow.addCell(new ESRHeaderCell("Column2", 4000));
+        esrHeaderRow.addCell(new ESRHeaderCell("Column3", 5000));
         esrHeaderBlock.addRow(esrHeaderRow);
         esrReport.setEsrHeaderBlock(esrHeaderBlock);
 
@@ -372,6 +375,119 @@ public class Example1 {
         esrMerge = new ESRMerge();
         esrMerge.addMergeGroup(0, 0, 0, 1);
         esrBlock.setMerge(esrMerge);
+        esrReport.addBlock(esrBlock);
+        return esrReport;
+    }
+
+    /**
+     * Report without title block
+     * @return
+     * @throws ESRException
+     */
+    private static ESRReport createSeventhReport() throws ESRException {
+        ESRReport esrReport = new ESRReport();
+
+        //Create a header:
+        ESRHeaderBlock esrHeaderBlock = new ESRHeaderBlock();
+        ESRRow esrHeaderRow = new ESRHeaderRow();
+        esrHeaderRow.addCell(new ESRHeaderCell("Column1", 3000));
+        esrHeaderRow.addCell(new ESRHeaderCell("Column2", 4000));
+        esrHeaderRow.addCell(new ESRHeaderCell("Column3", 5000));
+        esrHeaderBlock.addRow(esrHeaderRow);
+        esrReport.setEsrHeaderBlock(esrHeaderBlock);
+
+        //Create main content
+        ESRBlock esrBlock = new ESRTableBlock();
+        ESRRow esrRow = new ESRTableRow();
+        esrRow.addCell(new ESRTableCell("Cell 1.1"));
+        esrRow.addCell(new ESRTableCell("Cell 1.2"));
+        esrRow.addCell(new ESRTableCell("Cell 1.3"));
+        esrBlock.addRow(esrRow);
+        esrReport.addBlock(esrBlock);
+        esrBlock = new ESRTableBlock();
+        esrRow = new ESRTableRow();
+        esrRow.addCell(new ESRTableCell("Cell 2.1"));
+        esrRow.addCell(new ESRTableCell("Cell 2.2"));
+        esrRow.addCell(new ESRTableCell("Cell 2.3"));
+        esrBlock.addRow(esrRow);
+        esrReport.addBlock(esrBlock);
+        esrBlock = new ESRTableBlock();
+        esrRow = new ESRTableRow();
+        esrRow.addCell(new ESRTableCell("Cell 3.1"));
+        esrRow.addCell(new ESRTableCell("Cell 3.2"));
+        esrRow.addCell(new ESRTableCell("Cell 3.3"));
+        esrBlock.addRow(esrRow);
+        esrReport.addBlock(esrBlock);
+        return esrReport;
+    }
+
+    /**
+     * Report without header block
+     * @return
+     * @throws ESRException
+     */
+    private static ESRReport createEightReport() throws ESRException {
+        ESRReport esrReport = new ESRReport();
+
+        //Create a title:
+        ESRTitleBlock esrTitleBlock = new ESRTitleBlock();
+        esrTitleBlock.addTitleRow("A title for eight report");
+        esrReport.setEsrTitleBlock(esrTitleBlock);
+
+        //Create main content
+        ESRBlock esrBlock = new ESRTableBlock();
+        ESRRow esrRow = new ESRTableRow();
+        esrRow.addCell(new ESRTableCell("Cell 1.1", 3000));
+        esrRow.addCell(new ESRTableCell("Cell 1.2", 4000));
+        esrRow.addCell(new ESRTableCell("Cell 1.3", 5000));
+        esrBlock.addRow(esrRow);
+        esrReport.addBlock(esrBlock);
+        esrBlock = new ESRTableBlock();
+        esrRow = new ESRTableRow();
+        esrRow.addCell(new ESRTableCell("Cell 2.1"));
+        esrRow.addCell(new ESRTableCell("Cell 2.2"));
+        esrRow.addCell(new ESRTableCell("Cell 2.3"));
+        esrBlock.addRow(esrRow);
+        esrReport.addBlock(esrBlock);
+        esrBlock = new ESRTableBlock();
+        esrRow = new ESRTableRow();
+        esrRow.addCell(new ESRTableCell("Cell 3.1"));
+        esrRow.addCell(new ESRTableCell("Cell 3.2"));
+        esrRow.addCell(new ESRTableCell("Cell 3.3"));
+        esrBlock.addRow(esrRow);
+        esrReport.addBlock(esrBlock);
+        return esrReport;
+    }
+
+    /**
+     * Report without title and header blocks
+     * @return
+     * @throws ESRException
+     */
+    private static ESRReport createNinthReport() throws ESRException {
+        ESRReport esrReport = new ESRReport();
+
+        //Create main content
+        ESRBlock esrBlock = new ESRTableBlock();
+        ESRRow esrRow = new ESRTableRow();
+        esrRow.addCell(new ESRTableCell("Cell 1.1", 3000));
+        esrRow.addCell(new ESRTableCell("Cell 1.2", 4000));
+        esrRow.addCell(new ESRTableCell("Cell 1.3", 5000));
+        esrBlock.addRow(esrRow);
+        esrReport.addBlock(esrBlock);
+        esrBlock = new ESRTableBlock();
+        esrRow = new ESRTableRow();
+        esrRow.addCell(new ESRTableCell("Cell 2.1"));
+        esrRow.addCell(new ESRTableCell("Cell 2.2"));
+        esrRow.addCell(new ESRTableCell("Cell 2.3"));
+        esrBlock.addRow(esrRow);
+        esrReport.addBlock(esrBlock);
+        esrBlock = new ESRTableBlock();
+        esrRow = new ESRTableRow();
+        esrRow.addCell(new ESRTableCell("Cell 3.1"));
+        esrRow.addCell(new ESRTableCell("Cell 3.2"));
+        esrRow.addCell(new ESRTableCell("Cell 3.3"));
+        esrBlock.addRow(esrRow);
         esrReport.addBlock(esrBlock);
         return esrReport;
     }

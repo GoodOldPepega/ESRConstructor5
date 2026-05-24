@@ -28,15 +28,24 @@ public class ESRConstructor5 {
     private HSSFWorkbook workbook;
     private HSSFCellStyle currentStripeColor;
     private ESRStyleHandler esrStyleHandler;
-    private int stripeColorNumber = 0;
-    private boolean hasHeader = true;
+    private int stripeColorNumber;
+    private boolean hasHeader;
+    private boolean hasTitle;
     private Map<Integer, Integer> mapOfWidth;
-    private boolean widthComplete = false;
+    private boolean widthComplete;
 
     public ESRConstructor5(HSSFWorkbook hssfWorkbook) {
         this.workbook = hssfWorkbook;
         esrStyleHandler = new ESRStyleHandler(hssfWorkbook);
         resetStripeColor();
+    }
+
+    private void reset(){
+        rowNumber = 0;
+        stripeColorNumber = 0;
+        hasHeader = true;
+        hasTitle = true;
+        widthComplete = false;
     }
 
     /**
@@ -48,14 +57,19 @@ public class ESRConstructor5 {
      * @throws Exception
      */
     public void writeToExcel(ESRReport report, String sheetName, boolean needStrippedColourScheme) throws Exception {
+        reset();
         ESRTitleBlock titleBlock = report.getEsrTitleBlock();
         ESRHeaderBlock headerBlock = report.getEsrHeaderBlock();
         List<ESRBlock> listOfValueBlocks = report.getEsrBlocksList();
         int sheetNumber = 1;
         Sheet sheet = createSheet(sheetName);
-        int headerRowNumber = titleBlock.geTitleRows().size();
+        int headerRowNumber = 0;
+        if (titleBlock != null){
+            headerRowNumber = titleBlock.getTitleRows().size();
+        }
         int titleRowsMergeQuantity = 1;
         if (headerBlock != null) {
+//            hasTitle = false;
             titleRowsMergeQuantity = headerBlock.getMaxHeaderRowLength();
             createHeader(headerBlock, sheet, headerRowNumber);
         } else {
@@ -71,8 +85,13 @@ public class ESRConstructor5 {
                 }
             }
         }
-        createTitleRows(titleBlock, sheet, titleRowsMergeQuantity);
-        for (ESRBlock rowsBlock : listOfValueBlocks) {
+        if (titleBlock != null){
+            createTitleRows(titleBlock, sheet, titleRowsMergeQuantity);
+        } else {
+            hasTitle = false;
+        }
+        for (int i = 0; i < listOfValueBlocks.size(); i++) {
+            ESRBlock rowsBlock = listOfValueBlocks.get(i);
             if (rowNumber + rowsBlock.getRows().size() >= 65535) {
                 if (sheetNumber == 1) {
                     if (sheetName.length() > 28) {
@@ -81,13 +100,15 @@ public class ESRConstructor5 {
                     workbook.setSheetName(workbook.getSheetIndex(sheet), sheetName + "_" + sheetNumber);
                 }
                 sheet = createSheet(sheetName, ++sheetNumber);
-                createTitleRows(titleBlock, sheet, titleRowsMergeQuantity);
+                if (titleBlock != null){
+                    createTitleRows(titleBlock, sheet, titleRowsMergeQuantity);
+                }
                 if (headerBlock != null) {
                     createHeader(headerBlock, sheet, headerRowNumber);
                 }
                 resetStripeColor();
             }
-            writeRowsBlock(rowsBlock, sheet, needStrippedColourScheme);
+            writeRowsBlock(rowsBlock, sheet, needStrippedColourScheme, i == 0);
             toggleStripeColors();
         }
         if (!hasHeader) {
@@ -126,7 +147,7 @@ public class ESRConstructor5 {
     }
 
     private void createTitleRows(ESRTitleBlock titleBlock, Sheet sheet, int mergedColumnsNumber) {
-        List<String> listOfTitleRows = titleBlock.geTitleRows();
+        List<String> listOfTitleRows = titleBlock.getTitleRows();
         int titleRowNumber = 0;
         for (String titleString : listOfTitleRows) {
             Row row = sheet.createRow(titleRowNumber);
@@ -190,7 +211,7 @@ public class ESRConstructor5 {
         }
     }
 
-    private void writeRowsBlock(ESRBlock rowsBlock, Sheet sheet, boolean needStrippedColourScheme) {
+    private void writeRowsBlock(ESRBlock rowsBlock, Sheet sheet, boolean needStrippedColourScheme, boolean isFirstBlock) {
         int firstRowNumber = rowNumber;
 
         boolean hasMerge = false;
@@ -198,8 +219,12 @@ public class ESRConstructor5 {
             hasMerge = true;
         }
         List<ESRRow> listOfRows = rowsBlock.getRows();
-        for (ESRRow esrRow : listOfRows) {
+        for (int i = 0; i < listOfRows.size(); i++) {
+            ESRRow esrRow = listOfRows.get(i);
             ESRTableRow esrTableRow = (ESRTableRow) esrRow;
+            if (isFirstBlock && !hasHeader && !hasTitle && i == 0){
+                rowNumber--;
+            }
             Row row = sheet.createRow(++rowNumber);
             writeRow(esrTableRow, row, needStrippedColourScheme, hasMerge);
         }
