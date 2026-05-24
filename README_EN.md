@@ -29,3 +29,6 @@ General report outline:
 1. Create a new ESRConstructor5 report builder and pass the created HSSFWorkbook to it.
 2. Create an ESRReport. The report may contain a preliminary information block (ESRTitleBlock), a header block (ESRHeaderBlock), and multiple information blocks (ESRTableBlock) that hold the report data. Note that you can combine multiple reports within a single constructor. Each report will start on a new sheet relative to the previous one.
 3. The ESRTitleBlock is used to add information at the beginning of a report (for example, a row describing the report and other introductory information). This block can contain multiple rows. It will always be positioned at the very beginning of the report. It will always span the maximum number of columns used in the report. The block can contain multiple text rows, which are added using the addTitleRow(String titleRow) method. You can apply the HSSFCellStyle style to the block.
+
+## Examples
+[Examples EN](EXAMPLES_EN.md)
