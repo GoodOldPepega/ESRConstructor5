@@ -1,6 +1,7 @@
 # ESRConstructor5
 
 [Readme EN](README_EN.md)<br/>
+[Examples EN](EXAMPLES_EN.md)<br/>
 
 [Справка RU](README_RU.md)<br/>
 [Примеры RU](EXAMPLES_RU.md)<br/>
