@@ -5,7 +5,10 @@ import org.apache.poi.hssf.usermodel.HSSFHyperlink;
 import org.apache.poi.hssf.usermodel.HSSFPalette;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Hyperlink;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 import java.util.HashMap;
@@ -22,30 +25,34 @@ import java.util.Map;
  * Notice that when You set cell color with custom pallet, You should avoid INDIGO, LAVENDER, LIME, VIOLET, OLIVE_GREEN indexes.
  */
 
-
 public class ESRConstructor5 {
-    private int rowNumber;
+
     private HSSFWorkbook workbook;
-    private HSSFCellStyle currentStripeColor;
     private ESRStyleHandler esrStyleHandler;
+    private HSSFCellStyle currentStripeColor;
+    private int rowIndex;
     private int stripeColorNumber;
     private boolean hasHeader;
-    private boolean hasTitle;
-    private Map<Integer, Integer> mapOfWidth;
     private boolean widthComplete;
+    private Map<Integer, Integer> mapOfWidth;
+    private static final int LAST_ROW_INDEX = 65535;
 
     public ESRConstructor5(HSSFWorkbook hssfWorkbook) {
         this.workbook = hssfWorkbook;
         esrStyleHandler = new ESRStyleHandler(hssfWorkbook);
         resetStripeColor();
+
     }
 
     private void reset(){
-        rowNumber = 0;
+        rowIndex = 0;
         stripeColorNumber = 0;
         hasHeader = true;
-        hasTitle = true;
         widthComplete = false;
+    }
+
+    private void resetStripeColor(){
+        currentStripeColor = esrStyleHandler.getStrippedCellStyle1();
     }
 
     /**
@@ -54,24 +61,23 @@ public class ESRConstructor5 {
      * @param report ESRReport object
      * @param sheetName Name of sheet. Name must be less then 28 symbols, otherwise it will be cut.
      * @param needStrippedColourScheme if true - even and odd blocks will have different colors.
-     * @throws Exception
+     * @throws ESRException
      */
-    public void writeToExcel(ESRReport report, String sheetName, boolean needStrippedColourScheme) throws Exception {
+    public void writeToExcel(ESRReport report, String sheetName, boolean needStrippedColourScheme) throws ESRException {
         reset();
         ESRTitleBlock titleBlock = report.getEsrTitleBlock();
         ESRHeaderBlock headerBlock = report.getEsrHeaderBlock();
         List<ESRBlock> listOfValueBlocks = report.getEsrBlocksList();
-        int sheetNumber = 1;
-        Sheet sheet = createSheet(sheetName);
-        int headerRowNumber = 0;
-        if (titleBlock != null){
-            headerRowNumber = titleBlock.getTitleRows().size();
-        }
+        int sheetIndex = 1;
+        Sheet sheet = createSheet(handleSheetName(sheetName, sheetIndex));
         int titleRowsMergeQuantity = 1;
-        if (headerBlock != null) {
-//            hasTitle = false;
+        int headerRowIndex = 0;
+        if (headerBlock != null){
             titleRowsMergeQuantity = headerBlock.getMaxHeaderRowLength();
-            createHeader(headerBlock, sheet, headerRowNumber);
+            if (titleBlock != null){
+                headerRowIndex = titleBlock.getTitleRows().size();
+            }
+            createHeader(headerBlock, sheet, headerRowIndex);
         } else {
             hasHeader = false;
             mapOfWidth = new HashMap<Integer, Integer>();
@@ -86,29 +92,33 @@ public class ESRConstructor5 {
             }
         }
         if (titleBlock != null){
+            if (headerBlock == null){
+                rowIndex = titleBlock.getTitleRows().size();
+            }
             createTitleRows(titleBlock, sheet, titleRowsMergeQuantity);
-        } else {
-            hasTitle = false;
         }
         for (int i = 0; i < listOfValueBlocks.size(); i++) {
             ESRBlock rowsBlock = listOfValueBlocks.get(i);
-            if (rowNumber + rowsBlock.getRows().size() >= 65535) {
-                if (sheetNumber == 1) {
-                    if (sheetName.length() > 28) {
-                        sheetName = sheetName.substring(0, 28);
-                    }
-                    workbook.setSheetName(workbook.getSheetIndex(sheet), sheetName + "_" + sheetNumber);
+            if (rowIndex + rowsBlock.getRows().size() >= LAST_ROW_INDEX) {
+                if (sheetIndex == 1) {
+                    workbook.setSheetName(workbook.getSheetIndex(sheet), sheetName + "_" + sheetIndex);
                 }
-                sheet = createSheet(sheetName, ++sheetNumber);
+                sheet = createSheet(handleSheetName(sheetName, ++sheetIndex));
                 if (titleBlock != null){
+                    if (headerBlock == null){
+                        rowIndex = titleBlock.getTitleRows().size();
+                    }
                     createTitleRows(titleBlock, sheet, titleRowsMergeQuantity);
                 }
                 if (headerBlock != null) {
-                    createHeader(headerBlock, sheet, headerRowNumber);
+                    createHeader(headerBlock, sheet, headerRowIndex);
+                }
+                if (titleBlock == null && headerBlock == null){
+                    rowIndex = 0;
                 }
                 resetStripeColor();
             }
-            writeRowsBlock(rowsBlock, sheet, needStrippedColourScheme, i == 0);
+            writeRowsBlock(rowsBlock, sheet, needStrippedColourScheme);
             toggleStripeColors();
         }
         if (!hasHeader) {
@@ -118,39 +128,65 @@ public class ESRConstructor5 {
         }
     }
 
-    private void resetStripeColor(){
-        currentStripeColor = esrStyleHandler.getStrippedCellStyle1();
-    }
-
-    private void toggleStripeColors(){
-        stripeColorNumber++;
-        if (stripeColorNumber % 2 == 0) {
-            resetStripeColor();
-        } else {
-            currentStripeColor = esrStyleHandler.getStrippedCellStyle2();
+    private String handleSheetName(String name, int sheetIndex){
+        if (sheetIndex > 1){
+            name += "_" + sheetIndex;
         }
+        if (name.length() > 28){
+            name = name.substring(0, 28);
+        }
+        return name;
     }
 
-    private Sheet createSheet (String sheetName) {
+    private Sheet createSheet (String sheetName) throws ESRException {
+        if (workbook.getNumberOfSheets() == 255) {
+            throw new ESRException(ESRConstructor5_old.class.getName(),
+                    "EXCEL 2003 does not allows add more than 255 sheets");
+        }
         return workbook.createSheet(sheetName);
     }
 
-    private Sheet createSheet (String sheetName, int sheetNumber) throws ESRException {
-        if (workbook.getNumberOfSheets() == 255) {
-            throw new ESRException(ESRConstructor5.class.getName(),
-                    "EXCEL 2003 does not allows add more than 255 sheets");
+    private void createHeader(ESRHeaderBlock headerBlock, Sheet sheet, int headerRowIndex) {
+        this.rowIndex = headerRowIndex;
+        int firstRowIndex = rowIndex;
+        List headerRows = headerBlock.getRows();
+        for (int k = 0; k < headerRows.size(); k++) {
+            ESRHeaderRow esrHeaderRow = (ESRHeaderRow)headerRows.get(k);
+            Row row = sheet.createRow(rowIndex);
+            List listOfCells = esrHeaderRow.getCells();
+            for (int i = 0; i < listOfCells.size(); i++) {
+                ESRHeaderCell esrHeaderCell = (ESRHeaderCell) listOfCells.get(i);
+                sheet.setColumnWidth(i, esrHeaderCell.getWidth());
+                Cell cell = row.createCell(i);
+                if (esrHeaderCell.getStyle() == null) {
+                    esrHeaderCell.setStyle(esrStyleHandler.getHeaderCellStyle());
+                }
+                cell.setCellStyle(esrHeaderCell.getStyle());
+                cell.setCellValue(String.valueOf(esrHeaderCell.getValue()));
+            }
+            rowIndex++;
+
+            if (headerBlock.getMerge() != null) {
+                ESRMerge blockMerge = headerBlock.getMerge();
+                List<int[]> listOfMerges = blockMerge.getListOfMerges();
+                for (int[] mergeArray : listOfMerges) {
+                    try{
+                        sheet.addMergedRegion(new CellRangeAddress(firstRowIndex + mergeArray[0],
+                                firstRowIndex + mergeArray[1], mergeArray[2], mergeArray[3]));
+                    } catch (Exception e) {
+                        System.out.println("ESRConstructor: Merge " + mergeArray[0] + mergeArray[1] + mergeArray[2] +
+                                mergeArray[3] + " exceeds existing cells range in header block");
+                    }
+                }
+            }
         }
-        if (sheetName.length() > 28) {
-            sheetName = sheetName.substring(0, 28);
-        }
-        return workbook.createSheet(sheetName + "_" + sheetNumber);
     }
 
     private void createTitleRows(ESRTitleBlock titleBlock, Sheet sheet, int mergedColumnsNumber) {
         List<String> listOfTitleRows = titleBlock.getTitleRows();
-        int titleRowNumber = 0;
+        int titleRowIndex = 0;
         for (String titleString : listOfTitleRows) {
-            Row row = sheet.createRow(titleRowNumber);
+            Row row = sheet.createRow(titleRowIndex);
             for (int i = 0; i < mergedColumnsNumber; i++) {
                 Cell cell = row.createCell(i);
                 if (titleBlock.getStyle() == null) {
@@ -165,75 +201,27 @@ public class ESRConstructor5 {
             if (newMergedColumnsNumber > 0) {
                 newMergedColumnsNumber--;
             }
-            sheet.addMergedRegion(new CellRangeAddress(titleRowNumber, titleRowNumber, 0,
+            sheet.addMergedRegion(new CellRangeAddress(titleRowIndex, titleRowIndex, 0,
                     newMergedColumnsNumber));
-            titleRowNumber++;
+            titleRowIndex++;
         }
     }
 
-    private void createHeader(ESRHeaderBlock headerBlock, Sheet sheet, int headerRowNumber) {
-        rowNumber = headerRowNumber;
-        int firstRowNumber = rowNumber;
-        Row row;
-        List headerRows = headerBlock.getRows();
-        for (int k = 0; k < headerRows.size(); k++) {
-            ESRHeaderRow esrHeaderRow = (ESRHeaderRow)headerRows.get(k);
-            row = sheet.createRow(rowNumber);
-            List listOfCells = esrHeaderRow.getCells();
-            for (int i = 0; i < listOfCells.size(); i++) {
-                ESRHeaderCell esrHeaderCell = (ESRHeaderCell) listOfCells.get(i);
-                sheet.setColumnWidth(i, esrHeaderCell.getWidth());
-                Cell cell = row.createCell(i);
-                if (esrHeaderCell.getStyle() == null) {
-                    esrHeaderCell.setStyle(esrStyleHandler.getHeaderCellStyle());
-                }
-                cell.setCellStyle(esrHeaderCell.getStyle());
-                cell.setCellValue(String.valueOf(esrHeaderCell.getValue()));
-            }
-            if (k < headerRows.size() - 1) {
-                rowNumber++;
-            }
-        }
-
-        if (headerBlock.getMerge() != null) {
-            ESRMerge blockMerge = headerBlock.getMerge();
-            List<int[]> listOfMerges = blockMerge.getListOfMerges();
-            for (int[] mergeArray : listOfMerges) {
-                try{
-                    sheet.addMergedRegion(new CellRangeAddress(firstRowNumber + mergeArray[0],
-                            firstRowNumber + mergeArray[1], mergeArray[2], mergeArray[3]));
-                }
-                catch (Exception e) {
-                    System.out.println("ESRConstructor: Merge " + mergeArray[0] + mergeArray[1] + mergeArray[2] +
-                            mergeArray[3] + " exceeds existing cells range in header block");
-                }
-            }
-        }
-    }
-
-    private void writeRowsBlock(ESRBlock rowsBlock, Sheet sheet, boolean needStrippedColourScheme, boolean isFirstBlock) {
-        int firstRowNumber = rowNumber;
-
-        boolean hasMerge = false;
-        if (rowsBlock.getMerge() != null) {
-            hasMerge = true;
-        }
+    private void writeRowsBlock(ESRBlock rowsBlock, Sheet sheet, boolean needStrippedColourScheme) {
+        int firstRowIndex = rowIndex;
+        boolean hasMerge = rowsBlock.getMerge() != null;
         List<ESRRow> listOfRows = rowsBlock.getRows();
         for (int i = 0; i < listOfRows.size(); i++) {
-            ESRRow esrRow = listOfRows.get(i);
-            ESRTableRow esrTableRow = (ESRTableRow) esrRow;
-            if (isFirstBlock && !hasHeader && !hasTitle && i == 0){
-                rowNumber--;
-            }
-            Row row = sheet.createRow(++rowNumber);
+            ESRTableRow esrTableRow = (ESRTableRow) listOfRows.get(i);
+            Row row = sheet.createRow(rowIndex++);
             writeRow(esrTableRow, row, needStrippedColourScheme, hasMerge);
         }
         if (rowsBlock.getMerge() != null) {
             ESRMerge esrMerge = rowsBlock.getMerge();
             for (int[] mergeArray : esrMerge.getListOfMerges()) {
                 try{
-                    sheet.addMergedRegion(new CellRangeAddress(firstRowNumber + 1 + mergeArray[0],
-                            firstRowNumber + 1 + mergeArray[1], mergeArray[2], mergeArray[3]));
+                    sheet.addMergedRegion(new CellRangeAddress(firstRowIndex + mergeArray[0],
+                            firstRowIndex + mergeArray[1], mergeArray[2], mergeArray[3]));
                 }
                 catch (Exception e) {
                     System.out.println("ESRConstructor: Merge " + mergeArray[0] + mergeArray[1] + mergeArray[2] +
@@ -270,7 +258,7 @@ public class ESRConstructor5 {
                 cellStyle = esrStyleHandler.getDefaultCellStyle();
             }
             Object cellValueObject = esrTableCell.getValue();
-
+            //!!! Здесь можно добавить объединение значений при мерже
             if (hasMerge) {
                 int colWidth = row.getSheet().getColumnWidth(i);
                 int valueLength = String.valueOf(cellValueObject).length();
@@ -283,43 +271,60 @@ public class ESRConstructor5 {
                     maxLinesQuantity = linesQuantity;
                 }
             }
-
-            String valueS = String.valueOf(cellValueObject);
-            if (esrTableCell.getType() == Cell.CELL_TYPE_NUMERIC && ESRHelper.checkIfDouble(valueS)) {
-                cell.setCellType(Cell.CELL_TYPE_NUMERIC);
-                cell.setCellValue(Double.parseDouble(valueS));
-            } else if (esrTableCell.getType() == Cell.CELL_TYPE_FORMULA) {
-                cell.setCellType(Cell.CELL_TYPE_FORMULA);
-                cell.setCellFormula(valueS);
-            } else if (esrTableCell.getType() == Cell.CELL_TYPE_BLANK) {
-                cell.setCellType(Cell.CELL_TYPE_BLANK);
-            } else if (esrTableCell.getType() == Cell.CELL_TYPE_BOOLEAN) {
-                if ("true".equals(valueS) || "false".equals(valueS)) {
-                    cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
-                    cell.setCellValue(Boolean.parseBoolean(valueS));
-                } else {
-                    cell.setCellValue(valueS);
-                }
-            } else if (esrTableCell.getType() == Cell.CELL_TYPE_ERROR) {
-                cell.setCellType(Cell.CELL_TYPE_ERROR);
-            } else {
-                cell.setCellValue(valueS);
-            }
-
+            setValueToCell(esrTableCell, cell);
             cell.setCellStyle(cellStyle);
-            if (esrTableCell.getHyperlink() != null) {
-                String url = esrTableCell.getHyperlink();
-                Hyperlink link = (workbook).getCreationHelper().createHyperlink(HSSFHyperlink.LINK_URL);
-
-                link.setAddress(url);
-                cell.setHyperlink(link);
-            }
+            setHyperlink(esrTableCell, cell);
         }
         if (maxLinesQuantity == 0) {
             maxLinesQuantity = 1;
         }
         if (hasMerge) {
             row.setHeightInPoints(maxLinesQuantity * 10 * 1.7F);
+        }
+
+    }
+
+    private void setValueToCell(ESRTableCell esrTableCell, Cell cell){
+        Object cellValueObject = esrTableCell.getValue();
+        String valueS = String.valueOf(cellValueObject);
+        if (esrTableCell.getType() == Cell.CELL_TYPE_NUMERIC && ESRHelper.checkIfDouble(valueS)) {
+            cell.setCellType(Cell.CELL_TYPE_NUMERIC);
+            cell.setCellValue(Double.parseDouble(valueS));
+        } else if (esrTableCell.getType() == Cell.CELL_TYPE_FORMULA) {
+            cell.setCellType(Cell.CELL_TYPE_FORMULA);
+            cell.setCellFormula(valueS);
+        } else if (esrTableCell.getType() == Cell.CELL_TYPE_BLANK) {
+            cell.setCellType(Cell.CELL_TYPE_BLANK);
+        } else if (esrTableCell.getType() == Cell.CELL_TYPE_BOOLEAN) {
+            if ("true".equals(valueS) || "false".equals(valueS)) {
+                cell.setCellType(Cell.CELL_TYPE_BOOLEAN);
+                cell.setCellValue(Boolean.parseBoolean(valueS));
+            } else {
+                cell.setCellValue(valueS);
+            }
+        } else if (esrTableCell.getType() == Cell.CELL_TYPE_ERROR) {
+            cell.setCellType(Cell.CELL_TYPE_ERROR);
+        } else {
+            cell.setCellValue(valueS);
+        }
+    }
+
+    private void setHyperlink(ESRTableCell esrTableCell, Cell cell){
+        if (esrTableCell.getHyperlink() != null) {
+            String url = esrTableCell.getHyperlink();
+            Hyperlink link = (workbook).getCreationHelper().createHyperlink(HSSFHyperlink.LINK_URL);
+
+            link.setAddress(url);
+            cell.setHyperlink(link);
+        }
+    }
+
+    private void toggleStripeColors(){
+        stripeColorNumber++;
+        if (stripeColorNumber % 2 == 0) {
+            resetStripeColor();
+        } else {
+            currentStripeColor = esrStyleHandler.getStrippedCellStyle2();
         }
     }
 
@@ -499,4 +504,5 @@ public class ESRConstructor5 {
         palette.setColorAtIndex(HSSFColor.OLIVE_GREEN.index, (byte)red,(byte)green,(byte)blue);
         hssfCellStyle.setFillForegroundColor(hssfCellStyle.getIndex());
     }
+
 }
