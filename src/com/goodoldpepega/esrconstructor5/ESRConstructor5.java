@@ -35,12 +35,11 @@ public class ESRConstructor5 {
     private boolean hasHeader;
     private boolean widthComplete;
     private Map<Integer, Integer> mapOfWidth;
-    private static final int LAST_ROW_INDEX = 65535;
+    private static final int LAST_ROW_INDEX = 65537;
 
     public ESRConstructor5(HSSFWorkbook hssfWorkbook) {
         this.workbook = hssfWorkbook;
         esrStyleHandler = new ESRStyleHandler(hssfWorkbook);
-        resetStripeColor();
 
     }
 
@@ -49,6 +48,7 @@ public class ESRConstructor5 {
         stripeColorNumber = 0;
         hasHeader = true;
         widthComplete = false;
+        resetStripeColor();
     }
 
     private void resetStripeColor(){
@@ -258,7 +258,6 @@ public class ESRConstructor5 {
                 cellStyle = esrStyleHandler.getDefaultCellStyle();
             }
             Object cellValueObject = esrTableCell.getValue();
-            //!!! Здесь можно добавить объединение значений при мерже
             if (hasMerge) {
                 int colWidth = row.getSheet().getColumnWidth(i);
                 int valueLength = String.valueOf(cellValueObject).length();
