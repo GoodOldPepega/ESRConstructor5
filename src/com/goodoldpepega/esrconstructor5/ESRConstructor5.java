@@ -140,7 +140,7 @@ public class ESRConstructor5 {
 
     private Sheet createSheet (String sheetName) throws ESRException {
         if (workbook.getNumberOfSheets() == 255) {
-            throw new ESRException(ESRConstructor5_old.class.getName(),
+            throw new ESRException(ESRConstructor5.class.getName(),
                     "EXCEL 2003 does not allows add more than 255 sheets");
         }
         return workbook.createSheet(sheetName);
