@@ -165,18 +165,17 @@ public class ESRConstructor5 {
                 cell.setCellValue(String.valueOf(esrHeaderCell.getValue()));
             }
             rowIndex++;
-
-            if (headerBlock.getMerge() != null) {
-                ESRMerge blockMerge = headerBlock.getMerge();
-                List<int[]> listOfMerges = blockMerge.getListOfMerges();
-                for (int[] mergeArray : listOfMerges) {
-                    try{
-                        sheet.addMergedRegion(new CellRangeAddress(firstRowIndex + mergeArray[0],
-                                firstRowIndex + mergeArray[1], mergeArray[2], mergeArray[3]));
-                    } catch (Exception e) {
-                        System.out.println("ESRConstructor: Merge " + mergeArray[0] + mergeArray[1] + mergeArray[2] +
-                                mergeArray[3] + " exceeds existing cells range in header block");
-                    }
+        }
+        if (headerBlock.getMerge() != null) {
+            ESRMerge blockMerge = headerBlock.getMerge();
+            List<int[]> listOfMerges = blockMerge.getListOfMerges();
+            for (int[] mergeArray : listOfMerges) {
+                try{
+                    sheet.addMergedRegion(new CellRangeAddress(firstRowIndex + mergeArray[0],
+                            firstRowIndex + mergeArray[1], mergeArray[2], mergeArray[3]));
+                } catch (Exception e) {
+                    System.out.println("ESRConstructor: Merge " + mergeArray[0] + mergeArray[1] + mergeArray[2] +
+                            mergeArray[3] + " exceeds existing cells range in header block");
                 }
             }
         }

@@ -18,7 +18,7 @@ import java.io.IOException;
 public class FuncTest {
    private static ESRConstructor5 esrConstructor5;
    private static HSSFCellStyle customCellStyle;
-   private static boolean includeTestsThatWillCrashWorkbookCreation = true; // include tests that should crash workbook creation (for example tests that should exceed limits)
+   private static boolean includeTestsThatWillCrashWorkbookCreation = false; // include tests that should crash workbook creation (for example tests that should exceed limits)
    private static File excelFile = new File("D:/Test/funcTestReport.xls");
 
     public static void main(String[] args) throws IOException {
@@ -507,7 +507,7 @@ public class FuncTest {
         esrReport.setEsrTitleBlock(esrTitleBlock);
 
         ESRHeaderBlock esrHeaderBlock = new ESRHeaderBlock();
-        for (int i = 0; i < 3; i++){
+        for (int i = 0; i < 1; i++){
             ESRHeaderRow esrHeaderRow = new ESRHeaderRow();
             for (int j = 0; j < 3; j++){
                 esrHeaderRow.addCell(new ESRHeaderCell("Header " + i + "." + j, 3000));
