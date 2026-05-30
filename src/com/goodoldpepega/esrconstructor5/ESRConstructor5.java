@@ -200,8 +200,10 @@ public class ESRConstructor5 {
             if (newMergedColumnsNumber > 0) {
                 newMergedColumnsNumber--;
             }
-            sheet.addMergedRegion(new CellRangeAddress(titleRowIndex, titleRowIndex, 0,
-                    newMergedColumnsNumber));
+            if (newMergedColumnsNumber != 0){
+                sheet.addMergedRegion(new CellRangeAddress(titleRowIndex, titleRowIndex, 0,
+                        newMergedColumnsNumber));
+            }
             titleRowIndex++;
         }
     }
